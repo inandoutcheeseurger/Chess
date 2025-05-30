@@ -23,7 +23,7 @@ function onSquareClick(e) {
       square.classList.add('selected'); // highlight selected
       return;
     }
-  }
+  } else {
     // Piece already selected - try to move to this square
     
     const sourceSquare = document.getElementById(selectedSquareId);
@@ -49,7 +49,7 @@ function onSquareClick(e) {
     selectedPiece = null;
 
   }
-
+}
 
 function isWhitePiece(piece) {
     return ['♙','♖','♘','♗','♕','♔'].includes(piece);
