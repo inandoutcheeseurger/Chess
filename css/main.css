@@ -34,4 +34,7 @@ body {
     background-color: #476930;
     color: black;
   }
+  .selected {
+    background-color: yellow;
+  }
   
