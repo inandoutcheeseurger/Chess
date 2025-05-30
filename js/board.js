@@ -34,3 +34,7 @@ for (let r = 0; r < 8; r++) {
     board.appendChild(square);
   }
 }
+document.querySelectorAll('.square').forEach(sq => {
+  sq.addEventListener('click', onSquareClick);
+});
+
