@@ -21,8 +21,8 @@ function onSquareClick(e) {
       selectedSquareId = square.id;
       selectedPiece = piece;
       square.classList.add('selected'); // highlight selected
-      return;
     }
+    return;
   } else {
     // Piece already selected - try to move to this square
     
