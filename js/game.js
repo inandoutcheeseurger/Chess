@@ -1,7 +1,8 @@
 let selectedSquareId = null;  // stores the id of the selected square, e.g. "e2"
 let selectedPiece = null;     // stores the piece emoji, e.g. "♙"
 let currentTurn = 'white';    // track who's turn it is (optional now)
-
+const whosTurn = document.getElementById("whosTurn"); // get's the who's turn id
+turnUpdate();
 function onSquareClick(e) {
   const square = e.target;
   const piece = square.textContent;
@@ -23,7 +24,7 @@ function onSquareClick(e) {
       square.classList.add('selected'); // highlight selected
     }
     return;
-  } else {
+  }
     // Piece already selected - try to move to this square
     
     const sourceSquare = document.getElementById(selectedSquareId);
@@ -45,18 +46,25 @@ function onSquareClick(e) {
 
     // Switch turns
     currentTurn = currentTurn === 'white' ? 'black' : 'white';
+    turnUpdate();
     selectedSquareId = null;
     selectedPiece = null;
+    
 
-  }
+  
+}
+
+function turnUpdate(){
+  currentTurn = currentTurn === 'white' ? 'black' : 'white';
+  whosTurn.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1) + "'s Turn";
 }
 
 function isWhitePiece(piece) {
-    return ['♙','♖','♘','♗','♕','♔'].includes(piece);
-  }
+  return ['♙','♖','♘','♗','♕','♔'].includes(piece);
+}
   
-  function isBlackPiece(piece) {
-    return ['♟','♜','♞','♝','♛','♚'].includes(piece);
-  }
+function isBlackPiece(piece) {
+  return ['♟','♜','♞','♝','♛','♚'].includes(piece);
+}
   
 
