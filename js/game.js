@@ -20,6 +20,10 @@ function onSquareClick(e) {
       selectedSquareId = square.id;
       selectedPiece = piece;
       square.classList.add('selected'); // highlight selected
+
+      // highlight validmoves
+      const validMoves = findValidMoves(selectedSquareId, selectedPiece);
+      addValidMoveHighlights(validMoves);
     }
     return;
   }
@@ -30,10 +34,13 @@ function onSquareClick(e) {
     if ((currentTurn === 'white' && isWhitePiece(piece)) ||
         (currentTurn === 'black' && isBlackPiece(piece))) {
         // select a different piece of your own
+        clearValidMoveHighlights();
         sourceSquare.classList.remove('selected');
         selectedSquareId = square.id;
         selectedPiece = piece;
         square.classList.add('selected');
+        const validMoves = findValidMoves(selectedSquareId, selectedPiece);
+        addValidMoveHighlights(validMoves);
         return;
     }
 
@@ -41,6 +48,7 @@ function onSquareClick(e) {
     square.textContent = selectedPiece;
     sourceSquare.textContent = "";
     sourceSquare.classList.remove('selected');
+    clearValidMoveHighlights();
 
     // Switch turns
     currentTurn = currentTurn === 'white' ? 'black' : 'white';
@@ -58,21 +66,57 @@ function findValidMoves(squareId, piece){
   const col = squareId.charCodeAt(0) - 97; // e.g., "e2" -> 'e' -> 4 (zero-based index) a,b,c,d so on
 
   if (piece === '♙'){ // white pawn
-
-    validMoves.push(String.fromCharCode(col + 97) + (row + 1));
+    if(row < 8){
+      validMoves.push(String.fromCharCode(col + 97) + (row + 1));
+    }
 
     if (row === 2){ // if it is their first move, they can also go up by 2
       validMoves.push(String.fromCharCode(col + 97) + (row + 2));
     }
-    if (/* there is a piece in the diagnal */){
-      // add to the validMoves 
+    // Check diagonal captures (up-left and up-right)
+    // Up-left (row - 1, col - 1)
+    if (row < 8 && col > 0) { // Make sure we're not out of bounds
+      const diagLeft = String.fromCharCode(col - 1 + 97) + (row + 1);
+      const targetPiece = document.getElementById(diagLeft).textContent;
+      if (isBlackPiece(targetPiece)){
+        validMoves.push(diagLeft);
+      }
+      
     }
+
+    // Up-right (row - 1, col + 1)
+    if (row < 8 && col < 7) { // Make sure we're not out of bounds
+      const diagRight = String.fromCharCode(col + 1 + 97) + (row + 1);
+      const targetPiece = document.getElementById(diagRight).textContent;
+      if (isBlackPiece(targetPiece)){
+        validMoves.push(diagRight);
+      }
+    }
+    console.log(validMoves);
     return filterValidMoves(validMoves);
   }
 }
 
 function filterValidMoves(validMoves){
   // check if the validMoves squares are not valid due to blocked by some pieces, or there is a piece of your teammates.
+  const filtered = [];
+
+  for (let move of validMoves) {
+    if (move.length !== 2) continue;
+
+    const col = move[0];
+    const row = parseInt(move[1], 10);
+
+    if (
+      col >= 'a' && col <= 'h' &&
+      row >= 1 && row <= 8
+    ) {
+      filtered.push(move);
+    }
+  }
+  
+  return filtered;
+
 }
 
 function isWhitePiece(piece) {
@@ -83,4 +127,14 @@ function isBlackPiece(piece) {
   return ['♟','♜','♞','♝','♛','♚'].includes(piece);
 }
   
+function addValidMoveHighlights(validMoves) {
+  for(let moves of validMoves){
+    const canMove = document.getElementById(moves);
+    canMove.classList.add("validMove");
+  }
+}
 
+function clearValidMoveHighlights() {
+  const highlighted = document.querySelectorAll('.validMove');
+  highlighted.forEach(square => square.classList.remove('validMove'));
+}
