@@ -74,7 +74,7 @@ function findValidMoves(squareId, piece){
       validMoves.push(String.fromCharCode(col + 97) + (row + 2));
     }
     // Check diagonal captures (up-left and up-right)
-    // Up-left (row - 1, col - 1)
+    // Up-left (row + 1, col - 1)
     if (row < 8 && col > 0) { // Make sure we're not out of bounds
       const diagLeft = String.fromCharCode(col - 1 + 97) + (row + 1);
       const targetPiece = document.getElementById(diagLeft).textContent;
@@ -84,7 +84,7 @@ function findValidMoves(squareId, piece){
       
     }
 
-    // Up-right (row - 1, col + 1)
+    // Up-right (row + 1, col + 1)
     if (row < 8 && col < 7) { // Make sure we're not out of bounds
       const diagRight = String.fromCharCode(col + 1 + 97) + (row + 1);
       const targetPiece = document.getElementById(diagRight).textContent;
@@ -92,15 +92,47 @@ function findValidMoves(squareId, piece){
         validMoves.push(diagRight);
       }
     }
-    console.log(validMoves);
-    return filterValidMoves(validMoves);
+
   }
+
+  else if(piece ==='♟'){
+    if(row > 1){
+      validMoves.push(String.fromCharCode(col + 97) + (row - 1));
+    }
+
+    if (row === 7){
+      validMoves.push(String.fromCharCode(col + 97) + (row - 2));
+    }
+
+    // Check diagonal captures (up-left and up-right)
+    // down-left (row - 1, col - 1)
+    if (row > 1 && col > 0) { // Make sure we're not out of bounds
+      const diagLeft = String.fromCharCode(col - 1 + 97) + (row - 1);
+      const targetPiece = document.getElementById(diagLeft).textContent;
+      if (isWhitePiece(targetPiece)){
+        validMoves.push(diagLeft);
+      }
+      
+    }
+
+    // Up-right (row - 1, col + 1)
+    if (row > 1 && col < 7) { // Make sure we're not out of bounds
+      const diagRight = String.fromCharCode(col + 1 + 97) + (row - 1);
+      const targetPiece = document.getElementById(diagRight).textContent;
+      if (isWhitePiece(targetPiece)){
+        validMoves.push(diagRight);
+      }
+    }
+  }
+  console.log(validMoves);
+  return filterValidMoves(validMoves);
 }
 
 function filterValidMoves(validMoves){
   // check if the validMoves squares are not valid due to blocked by some pieces, or there is a piece of your teammates.
   const filtered = [];
 
+  // check if the square are not in out of bound
   for (let move of validMoves) {
     if (move.length !== 2) continue;
 
