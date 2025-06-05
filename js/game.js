@@ -124,32 +124,89 @@ function findValidMoves(squareId, piece){
       }
     }
   }
-  console.log(validMoves);
-  return filterValidMoves(validMoves);
-}
-
-function filterValidMoves(validMoves){
-  // check if the validMoves squares are not valid due to blocked by some pieces, or there is a piece of your teammates.
-  const filtered = [];
-
-  // check if the square are not in out of bound
-  for (let move of validMoves) {
-    if (move.length !== 2) continue;
-
-    const col = move[0];
-    const row = parseInt(move[1], 10);
-
-    if (
-      col >= 'a' && col <= 'h' &&
-      row >= 1 && row <= 8
-    ) {
-      filtered.push(move);
+  
+  else if (piece ==='♘' || piece ==='♞'){
+    const knightMoves = [
+      [2, 1], [2, -1], [-2, 1], [-2, -1],
+      [1, 2], [1, -2], [-1, 2], [-1, -2]
+    ];
+    for (let [dr, dc] of knightMoves){
+      const newRow = row + dr;
+      const newCol = col + dc;
+      validMoves.push(String.fromCharCode(newCol + 97) + newRow);
+    }
+  }
+  if (piece === '♗' || piece === '♝') { // white or black bishop
+    const directions = [
+      [1, 1],   // up-right
+      [1, -1],  // up-left
+      [-1, 1],  // down-right
+      [-1, -1]  // down-left
+    ];
+  
+    for (let [dr, dc] of directions) {
+      let r = row + dr;
+      let c = col + dc;
+      while (r >= 1 && r <= 8 && c >= 0 && c <= 7) {
+        const targetId = String.fromCharCode(c + 97) + r;
+        const targetSquare = document.getElementById(targetId);
+        if (!targetSquare) break;
+  
+        const targetPiece = targetSquare.textContent;
+  
+        // Stop if it's an ally piece
+        if (
+          (isWhitePiece(piece) && isWhitePiece(targetPiece)) ||
+          (isBlackPiece(piece) && isBlackPiece(targetPiece))
+        ) break;
+  
+        validMoves.push(targetId);
+  
+        // Stop if it's an enemy piece after capturing
+        if (
+          (isWhitePiece(piece) && isBlackPiece(targetPiece)) ||
+          (isBlackPiece(piece) && isWhitePiece(targetPiece))
+        ) break;
+  
+        r += dr;
+        c += dc;
+      }
     }
   }
   
-  return filtered;
-
+  console.log(validMoves);
+  return filterValidMoves(validMoves, piece);
 }
+
+function filterValidMoves(validMoves, piece) {
+  const filtered = [];
+
+  for (let move of validMoves) {
+    // if there are something like c-2 it just goes through
+    if (move.length!== 2) continue;
+
+    const col = move.charCodeAt(0) - 97;
+    const row = parseInt(move[1], 10);
+
+    // Bound check
+    if (col < 0 || col > 7 || row < 1 || row > 8) continue;
+    const targetPiece = document.getElementById(move).textContent;
+    if (!targetPiece) {
+      // Square is empty — always valid
+      filtered.push(move);
+    } else if (
+      (isWhitePiece(piece) && isBlackPiece(targetPiece)) ||
+      (isBlackPiece(piece) && isWhitePiece(targetPiece))
+    ) {
+      // Square has an enemy piece — valid capture
+      filtered.push(move);
+    }
+    // If square has same-color piece, we skip it
+  }
+
+  return filtered;
+}
+
 
 function isWhitePiece(piece) {
   return ['♙','♖','♘','♗','♕','♔'].includes(piece);
