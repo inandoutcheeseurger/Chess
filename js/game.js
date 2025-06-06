@@ -43,18 +43,22 @@ function onSquareClick(e) {
         addValidMoveHighlights(validMoves);
         return;
     }
+    if(square.classList.contains("validMove")){
+      // Move piece: set target square text to piece, clear source square text
+      square.textContent = selectedPiece;
+      sourceSquare.textContent = "";
+      sourceSquare.classList.remove('selected');
+      clearValidMoveHighlights();
 
-    // Move piece: set target square text to piece, clear source square text
-    square.textContent = selectedPiece;
-    sourceSquare.textContent = "";
-    sourceSquare.classList.remove('selected');
-    clearValidMoveHighlights();
+      // Switch turns
+      currentTurn = currentTurn === 'white' ? 'black' : 'white';
+      whosTurn.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1) + "'s Turn";
+      selectedSquareId = null;
+      selectedPiece = null;
+    } else {
+      alert("unalid move try to click on valid square");
+    }
 
-    // Switch turns
-    currentTurn = currentTurn === 'white' ? 'black' : 'white';
-    whosTurn.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1) + "'s Turn";
-    selectedSquareId = null;
-    selectedPiece = null;
     
 
   
@@ -66,12 +70,13 @@ function findValidMoves(squareId, piece){
   const col = squareId.charCodeAt(0) - 97; // e.g., "e2" -> 'e' -> 4 (zero-based index) a,b,c,d so on
 
   if (piece === '♙'){ // white pawn
-    if(row < 8){
+    const pieceOneFront = document.getElementById(String.fromCharCode(col + 97) + (row + 1)).textContent;
+    const pieceTwoFront = document.getElementById(String.fromCharCode(col + 97) + (row + 2)).textContent;
+    if(!pieceOneFront && row < 8){
       validMoves.push(String.fromCharCode(col + 97) + (row + 1));
-    }
-
-    if (row === 2){ // if it is their first move, they can also go up by 2
-      validMoves.push(String.fromCharCode(col + 97) + (row + 2));
+      if (!pieceTwoFront && row === 2){ // if it is their first move, they can also go up by 2
+        validMoves.push(String.fromCharCode(col + 97) + (row + 2));
+      }
     }
     // Check diagonal captures (up-left and up-right)
     // Up-left (row + 1, col - 1)
@@ -96,13 +101,16 @@ function findValidMoves(squareId, piece){
   }
 
   else if(piece ==='♟'){
-    if(row > 1){
+    const pieceOneFront = document.getElementById(String.fromCharCode(col + 97) + (row - 1)).textContent;
+    const pieceTwoFront = document.getElementById(String.fromCharCode(col + 97) + (row - 2)).textContent;
+    if(!pieceOneFront && row > 1){
       validMoves.push(String.fromCharCode(col + 97) + (row - 1));
+      if (!pieceTwoFront && row === 7){
+        validMoves.push(String.fromCharCode(col + 97) + (row - 2));
+      }
     }
 
-    if (row === 7){
-      validMoves.push(String.fromCharCode(col + 97) + (row - 2));
-    }
+    
 
     // Check diagonal captures (up-left and up-right)
     // down-left (row - 1, col - 1)
@@ -136,44 +144,55 @@ function findValidMoves(squareId, piece){
       validMoves.push(String.fromCharCode(newCol + 97) + newRow);
     }
   }
-  if (piece === '♗' || piece === '♝') { // white or black bishop
-    const directions = [
+  else if (piece === '♗' || piece === '♝') { // white or black bishop
+    const bishopDirections = [
       [1, 1],   // up-right
       [1, -1],  // up-left
       [-1, 1],  // down-right
       [-1, -1]  // down-left
     ];
-  
-    for (let [dr, dc] of directions) {
-      let r = row + dr;
-      let c = col + dc;
-      while (r >= 1 && r <= 8 && c >= 0 && c <= 7) {
-        const targetId = String.fromCharCode(c + 97) + r;
-        const targetSquare = document.getElementById(targetId);
-        if (!targetSquare) break;
-  
-        const targetPiece = targetSquare.textContent;
-  
-        // Stop if it's an ally piece
-        if (
-          (isWhitePiece(piece) && isWhitePiece(targetPiece)) ||
-          (isBlackPiece(piece) && isBlackPiece(targetPiece))
-        ) break;
-  
-        validMoves.push(targetId);
-  
-        // Stop if it's an enemy piece after capturing
-        if (
-          (isWhitePiece(piece) && isBlackPiece(targetPiece)) ||
-          (isBlackPiece(piece) && isWhitePiece(targetPiece))
-        ) break;
-  
-        r += dr;
-        c += dc;
-      }
+    bishopRookQueenMovement(bishopDirections, validMoves, row, col, piece);
+  }
+  else if (piece === '♖' || piece === '♜') { // white or black rook
+    const rookDirections = [
+      [1, 0],   // up
+      [-1, 0],  // down
+      [0, -1],  // left
+      [0, 1]  // right
+    ];
+    bishopRookQueenMovement(rookDirections, validMoves, row, col, piece);
+  }
+  else if (piece === '♕' || piece === '♛') { // white or black queen
+    const queenDirections = [
+      [1, 1],   // up-right
+      [1, -1],  // up-left
+      [-1, 1],  // down-right
+      [-1, -1],  // down-left
+      [1, 0],   // up
+      [-1, 0],  // down
+      [0, -1],  // left
+      [0, 1]  // right
+    ];
+    bishopRookQueenMovement(queenDirections, validMoves, row, col, piece);
+  }
+  else if (piece ==='♔' || piece ==='♚'){
+    const directions = [
+      [1, 1],   // up-right
+      [1, -1],  // up-left
+      [-1, 1],  // down-right
+      [-1, -1],  // down-left
+      [1, 0],   // up
+      [-1, 0],  // down
+      [0, -1],  // left
+      [0, 1]  // right
+    ];
+    for (let [dr, dc] of directions){
+      const newRow = row + dr;
+      const newCol = col + dc;
+      validMoves.push(String.fromCharCode(newCol + 97) + newRow);
     }
   }
-  
+
   console.log(validMoves);
   return filterValidMoves(validMoves, piece);
 }
@@ -207,7 +226,36 @@ function filterValidMoves(validMoves, piece) {
   return filtered;
 }
 
+function bishopRookQueenMovement(directions, validMoves, row, col, piece){
+  for (let [dr, dc] of directions) {
+    let r = row + dr;
+    let c = col + dc;
+    while (r >= 1 && r <= 8 && c >= 0 && c <= 7) {
+      const targetId = String.fromCharCode(c + 97) + r;
+      const targetSquare = document.getElementById(targetId);
+      if (!targetSquare) break;
 
+      const targetPiece = targetSquare.textContent;
+
+      // Stop if it's an ally piece
+      if (
+        (isWhitePiece(piece) && isWhitePiece(targetPiece)) ||
+        (isBlackPiece(piece) && isBlackPiece(targetPiece))
+      ) break;
+
+      validMoves.push(targetId);
+
+      // Stop if it's an enemy piece after capturing
+      if (
+        (isWhitePiece(piece) && isBlackPiece(targetPiece)) ||
+        (isBlackPiece(piece) && isWhitePiece(targetPiece))
+      ) break;
+
+      r += dr;
+      c += dc;
+    }
+  }
+}
 function isWhitePiece(piece) {
   return ['♙','♖','♘','♗','♕','♔'].includes(piece);
 }
