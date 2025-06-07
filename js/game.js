@@ -1,5 +1,7 @@
 let selectedSquareId = null;  // stores the id of the selected square, e.g. "e2"
 let selectedPiece = null;     // stores the piece emoji, e.g. "♙"
+let lastMove = null;
+let enPassantCaptureSquare = null;  // globally track the actual square to remove a pawn from
 let currentTurn = 'white';    // track who's turn it is (optional now)
 const whosTurn = document.getElementById("whosTurn"); // get's the who's turn id
 whosTurn.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1) + "'s Turn";
@@ -45,8 +47,15 @@ function onSquareClick(e) {
     }
     if(square.classList.contains("validMove")){
       // Move piece: set target square text to piece, clear source square text
+      updateLastMove(sourceSquare.id, square.id, selectedPiece);
       square.textContent = selectedPiece;
       sourceSquare.textContent = "";
+      // Check and handle en passant capture
+      if (enPassantCaptureSquare && square.id === lastMove.to) {
+        const captured = document.getElementById(enPassantCaptureSquare);
+        if (captured) captured.textContent = "";
+      }
+      enPassantCaptureSquare = null; // Always reset after move
       sourceSquare.classList.remove('selected');
       clearValidMoveHighlights();
 
@@ -56,7 +65,7 @@ function onSquareClick(e) {
       selectedSquareId = null;
       selectedPiece = null;
     } else {
-      alert("unalid move try to click on valid square");
+      alert("Unvalid move: try again");
     }
 
     
@@ -97,6 +106,14 @@ function findValidMoves(squareId, piece){
         validMoves.push(diagRight);
       }
     }
+    const enPassantMove =checkEnPassant(row, col, piece);
+    console.log("enpassant square: " + enPassantMove);
+
+    if (enPassantMove){
+      console.log("enpassant should be availiable?");
+      validMoves.push(enPassantMove);
+    } 
+    console.log(validMoves);
 
   }
 
@@ -131,6 +148,12 @@ function findValidMoves(squareId, piece){
         validMoves.push(diagRight);
       }
     }
+    const enPassantMove = checkEnPassant(row, col, piece);
+    console.log("enpassant square: " + enPassantMove);
+    if (enPassantMove){
+      validMoves.push(enPassantMove);
+    } 
+    console.log(validMoves);
   }
   
   else if (piece ==='♘' || piece ==='♞'){
@@ -224,6 +247,47 @@ function filterValidMoves(validMoves, piece) {
   }
 
   return filtered;
+}
+
+function updateLastMove(fromSquare, toSquare, piece) {
+  lastMove = { from: fromSquare, to: toSquare, piece: piece };
+  console.log(lastMove);
+}
+// Function to check for en passant
+function checkEnPassant(row, col, piece) {
+  enPassantCaptureSquare = null;
+  // Get the last move information
+  if (lastMove && lastMove.piece !== piece) {
+    const lastMoveFromRow = parseInt(lastMove.from[1], 10);
+    const lastMoveToRow = parseInt(lastMove.to[1], 10);
+    const lastMoveFromCol = lastMove.from.charCodeAt(0) - 97;
+    const lastMoveToCol = lastMove.to.charCodeAt(0) - 97;
+
+
+    if (
+      piece === '♙' &&
+      lastMove.piece === '♟' &&
+      lastMoveFromRow === 7 && lastMoveToRow === 5 &&
+      row === 5 && // Your pawn must be on the 5th rank
+      Math.abs(lastMoveToCol - col) === 1 // pawn must next to each other
+    ) {
+      enPassantCaptureSquare = String.fromCharCode(lastMoveToCol + 97) + "5";  // Remove black pawn on 5th rank
+      return String.fromCharCode(lastMoveToCol + 97) + "6";
+    }
+    
+    else if (
+      piece === '♟' &&
+      lastMove.piece === '♙' &&
+      lastMoveFromRow === 2 && lastMoveToRow === 4 &&
+      row === 4 && // Your pawn must be on the 4th rank
+      Math.abs(lastMoveToCol - col) === 1 // pawn must next to each other
+    ) {
+      enPassantCaptureSquare = String.fromCharCode(lastMoveToCol + 97) + "4"; // Remove white pawn on 4th rank
+      return String.fromCharCode(lastMoveToCol + 97) + "3";
+    }
+  }
+
+  return;
 }
 
 function bishopRookQueenMovement(directions, validMoves, row, col, piece){
