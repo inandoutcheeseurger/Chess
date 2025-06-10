@@ -51,9 +51,22 @@ function onSquareClick(e) {
       square.textContent = selectedPiece;
       sourceSquare.textContent = "";
       // Check and handle en passant capture
-      if (enPassantCaptureSquare && square.id === lastMove.to) {
+      if (enPassantCaptureSquare) {
         const captured = document.getElementById(enPassantCaptureSquare);
-        if (captured) captured.textContent = "";
+        if (captured.textContent === '♟'){
+          const enPassantMoveSquare = enPassantCaptureSquare[0] + (parseInt(enPassantCaptureSquare[1], 10) + 1).toString();
+          console.log(enPassantMoveSquare);
+          if(square.id === enPassantMoveSquare){
+            captured.textContent = "";
+          }
+        }
+        else if(captured.textContent === '♙'){
+          const enPassantMoveSquare = enPassantCaptureSquare[0] + (parseInt(enPassantCaptureSquare[1], 10) - 1).toString();
+          console.log(enPassantMoveSquare);
+          if(square.id === enPassantMoveSquare){
+            captured.textContent = "";
+          }
+        }
       }
       enPassantCaptureSquare = null; // Always reset after move
       sourceSquare.classList.remove('selected');
