@@ -4,8 +4,12 @@ let lastMove = null;
 let enPassantCaptureSquare = null;  // globally track the actual square to remove a pawn from
 let currentTurn = 'white';    // track who's turn it is (optional now)
 const whosTurn = document.getElementById("whosTurn"); // get's the who's turn id
+
+
 whosTurn.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1) + "'s Turn";
 function onSquareClick(e) {
+  
+  console.log(findKing("white"));
   const square = e.target;
   const piece = square.textContent;
 
@@ -333,6 +337,44 @@ function bishopRookQueenMovement(directions, validMoves, row, col, piece){
     }
   }
 }
+
+function isInCheck(color) {
+  const kingPos = findKing(color);
+  const opponentColor = (color === "white") ? "black" : "white";
+  const opponentMoves = getAllAttackingMoves(opponentColor); // NOT filtered by self-check!
+
+  return opponentMoves.some(move => move.to === kingPos);
+}
+
+function findKing(color){
+  const squares = document.querySelectorAll("#chessboard div"); // all divs inside chessboard
+
+  if (color === "white"){
+    console.log("got in white?");
+    squares.forEach(square => {
+      console.log(square.textContent);
+      if(square.textContent === "♔"){
+        console.log("got in cause it is white king?");
+        console.log(square.id);
+        return square.id;
+      }
+    });
+  } else if (color === "black") {
+    squares.forEach(square => {
+      if(square.textContent === "♚"){
+        return square;
+      }
+    });
+  } else {
+    alert("error: in function findKing, the color is not defined wtf is event this bruv");
+    return;
+  }
+}
+
+function getAllAttackingMoves(color){ // maybe use that findValidMoves functions ig bruv
+
+}
+
 function isWhitePiece(piece) {
   return ['♙','♖','♘','♗','♕','♔'].includes(piece);
 }
