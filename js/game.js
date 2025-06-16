@@ -9,7 +9,6 @@ const whosTurn = document.getElementById("whosTurn"); // get's the who's turn id
 whosTurn.textContent = currentTurn.charAt(0).toUpperCase() + currentTurn.slice(1) + "'s Turn";
 function onSquareClick(e) {
   
-  console.log(findKing("white"));
   const square = e.target;
   const piece = square.textContent;
 
@@ -351,20 +350,17 @@ function findKing(color){
 
   if (color === "white"){
     console.log("got in white?");
-    squares.forEach(square => {
-      console.log(square.textContent);
+    for (let square of squares){
       if(square.textContent === "♔"){
-        console.log("got in cause it is white king?");
-        console.log(square.id);
         return square.id;
       }
-    });
+    }
   } else if (color === "black") {
-    squares.forEach(square => {
+    for (let square of squares){
       if(square.textContent === "♚"){
-        return square;
+        return square.id;
       }
-    });
+    }
   } else {
     alert("error: in function findKing, the color is not defined wtf is event this bruv");
     return;
@@ -372,7 +368,22 @@ function findKing(color){
 }
 
 function getAllAttackingMoves(color){ // maybe use that findValidMoves functions ig bruv
+  const attackedSquares = [];
+  const squares = document.querySelectorAll("#chessboard div"); // all divs inside chessboard
 
+  if (color === "white"){
+    for(let square of squares){
+      if (isWhitePiece(square.textContent)){
+        attackedSquares.push(findValidMoves(square.textContent));
+      }
+    }
+  } else if(color === "black"){
+    for(let square of squares){
+      if (isBlackPiece(square.textContent)){
+        attackedSquares.push(findValidMoves(square.textContent));
+      }
+    }
+  }
 }
 
 function isWhitePiece(piece) {
